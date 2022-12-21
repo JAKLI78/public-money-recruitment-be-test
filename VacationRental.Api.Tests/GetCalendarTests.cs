@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using VacationRental.Api.Models;
 using Xunit;
@@ -29,7 +29,7 @@ namespace VacationRental.Api.Tests
             using (var postRentalResponse = await _client.PostAsJsonAsync($"/api/v1/rentals", postRentalRequest))
             {
                 Assert.True(postRentalResponse.IsSuccessStatusCode);
-                postRentalResult = await postRentalResponse.Content.ReadAsAsync<ResourceIdViewModel>();
+                postRentalResult = await postRentalResponse.Content.ReadFromJsonAsync<ResourceIdViewModel>();
             }
 
             var postBooking1Request = new BookingBindingModel
@@ -43,7 +43,7 @@ namespace VacationRental.Api.Tests
             using (var postBooking1Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking1Request))
             {
                 Assert.True(postBooking1Response.IsSuccessStatusCode);
-                postBooking1Result = await postBooking1Response.Content.ReadAsAsync<ResourceIdViewModel>();
+                postBooking1Result = await postBooking1Response.Content.ReadFromJsonAsync<ResourceIdViewModel>();
             }
 
             var postBooking2Request = new BookingBindingModel
@@ -57,14 +57,14 @@ namespace VacationRental.Api.Tests
             using (var postBooking2Response = await _client.PostAsJsonAsync($"/api/v1/bookings", postBooking2Request))
             {
                 Assert.True(postBooking2Response.IsSuccessStatusCode);
-                postBooking2Result = await postBooking2Response.Content.ReadAsAsync<ResourceIdViewModel>();
+                postBooking2Result = await postBooking2Response.Content.ReadFromJsonAsync<ResourceIdViewModel>();
             }
 
             using (var getCalendarResponse = await _client.GetAsync($"/api/v1/calendar?rentalId={postRentalResult.Id}&start=2000-01-01&nights=5"))
             {
                 Assert.True(getCalendarResponse.IsSuccessStatusCode);
 
-                var getCalendarResult = await getCalendarResponse.Content.ReadAsAsync<CalendarViewModel>();
+                var getCalendarResult = await getCalendarResponse.Content.ReadFromJsonAsync<CalendarViewModel>();
                 
                 Assert.Equal(postRentalResult.Id, getCalendarResult.RentalId);
                 Assert.Equal(5, getCalendarResult.Dates.Count);
