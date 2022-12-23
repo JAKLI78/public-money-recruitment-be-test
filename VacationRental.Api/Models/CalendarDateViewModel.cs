@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VacationRental.Api.Models
+namespace VacationRental.Api.Models;
+
+public class CalendarDateViewModel
 {
-    public class CalendarDateViewModel
-    {
-        public DateTime Date { get; set; }
-        public List<CalendarBookingViewModel> Bookings { get; set; }
-    }
+    public DateTime Date { get; set; }
+    public List<CalendarBookingViewModel> Bookings { get; set; }
+
+    public List<CalendarPreparationViewModel> PreparationTimes { get; set; }
 }

@@ -1,43 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
+using VacationRental.Core.Exceptions;
+using VacationRental.Data.Entities;
+using VacationRental.Services.Interfaces;
 
-namespace VacationRental.Api.Controllers
+namespace VacationRental.Api.Controllers;
+
+[Route("api/v1/rentals")]
+[ApiController]
+public class RentalsController : ControllerBase
 {
-    [Route("api/v1/rentals")]
-    [ApiController]
-    public class RentalsController : ControllerBase
+    private readonly IMapper _mapper;
+    private readonly IRentalService _rentalService;
+
+    public RentalsController(IMapper mapper, IRentalService rentalService)
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
+        _mapper = mapper;
+        _rentalService = rentalService;
+    }
 
-        public RentalsController(IDictionary<int, RentalViewModel> rentals)
+    [HttpGet]
+    [Route("{rentalId:int}")]
+    public RentalViewModel Get(int rentalId)
+    {
+        var rental = _rentalService.GetRentalById(rentalId);
+
+        if (rental == null)
         {
-            _rentals = rentals;
+            throw new EntityNotFoundException("Rental not found");
         }
 
-        [HttpGet]
-        [Route("{rentalId:int}")]
-        public RentalViewModel Get(int rentalId)
-        {
-            if (!_rentals.ContainsKey(rentalId))
-                throw new ApplicationException("Rental not found");
+        return _mapper.Map<RentalViewModel>(rental);
+    }
 
-            return _rentals[rentalId];
-        }
+    [HttpPost]
+    public ResourceIdViewModel Post(RentalBindingModel model)
+    {
+        var rental = _mapper.Map<Rental>(model);
 
-        [HttpPost]
-        public ResourceIdViewModel Post(RentalBindingModel model)
-        {
-            var key = new ResourceIdViewModel { Id = _rentals.Keys.Count + 1 };
+        var id = _rentalService.AddRental(rental);
 
-            _rentals.Add(key.Id, new RentalViewModel
-            {
-                Id = key.Id,
-                Units = model.Units
-            });
+        var key = new ResourceIdViewModel { Id = id };
 
-            return key;
-        }
+        return key;
+    }
+
+    [HttpPut]
+    public ResourceIdViewModel Put(RentalBindingUpdateModel model)
+    {
+        var rentalToUpdate = _mapper.Map<Rental>(model);
+
+        _rentalService.UpdateRental(rentalToUpdate);
+
+        return new ResourceIdViewModel { Id = model.Id };
     }
 }
